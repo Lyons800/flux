@@ -21,6 +21,11 @@ import dave from "/dave.jpg";
 import t11s from "/t11s.jpg";
 import paradigm from "/paradigm.svg";
 
+import { WalletConnection } from "./WalletConnection";
+
+import { useAccount, useConnect, useDisconnect } from 'wagmi'
+import { InjectedConnector } from 'wagmi/connectors/injected'
+
 export function NavigationBar({
   newUserNodeLinkedToANewSystemNode,
   newConnectedToSelectedNode,
@@ -255,6 +260,7 @@ export function NavigationBar({
         >
           About
         </Button>
+        <WalletConnection />
       </Row>
     </Row>
   );
