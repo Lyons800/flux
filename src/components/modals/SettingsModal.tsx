@@ -11,6 +11,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Checkbox,
+  HStack,
 } from "@chakra-ui/react";
 
 import { LabeledSelect, LabeledSlider } from "../utils/LabeledInputs";
@@ -35,6 +36,11 @@ export const SettingsModal = React.memo(function SettingsModal({
   apiKey: string | null;
   setApiKey: (apiKey: string) => void;
 }) {
+  
+    const setProCon = (value: "pro" | "con") => {
+      setSettings({ ...settings, proCon: value });
+    };
+
   const reset = () =>
     confirm(
       "Are you sure you want to reset your settings to default? This cannot be undone!"
@@ -64,7 +70,25 @@ export const SettingsModal = React.memo(function SettingsModal({
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Settings</ModalHeader>
+      <ModalHeader>
+          <HStack>
+            <Text>Settings</Text>
+            <Button
+              size="sm"
+              colorScheme={settings.proCon === "pro" ? "green" : "gray"}
+              onClick={() => setProCon("pro")}
+            >
+              Pro
+            </Button>
+            <Button
+              size="sm"
+              colorScheme={settings.proCon === "con" ? "red" : "gray"}
+              onClick={() => setProCon("con")}
+            >
+              Con
+            </Button>
+          </HStack>
+        </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <LabeledSelect

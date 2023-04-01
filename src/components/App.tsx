@@ -549,16 +549,16 @@ function App() {
     if (forceAutoZoom) autoZoom();
   };
 
-  const newConnectedToSelectedNode = (type: FluxNodeType) => {
+  const newConnectedToSelectedNode = (type: FluxNodeType, proConValue?: "pro" | "con") => {
     const selectedNode = getFluxNode(nodes, selectedNodeId!);
-
+  
     if (selectedNode) {
       takeSnapshot();
-
+  
       const selectedNodeChildren = getFluxNodeChildren(nodes, edges, selectedNodeId!);
-
+  
       const id = generateNodeId();
-
+  
       selectNode(id, (nodes) =>
         addFluxNode(nodes, {
           id,
@@ -574,9 +574,10 @@ function App() {
           fluxNodeType: type,
           text: "",
           generating: false,
+          proCon: proConValue, // Add this line to store the proCon value in the node
         })
       );
-
+  
       setEdges((edges) =>
         addFluxEdge(edges, {
           source: selectedNodeId!,
@@ -584,10 +585,11 @@ function App() {
           animated: false,
         })
       );
-
+  
       autoZoomIfNecessary();
     }
   };
+  
 
   const deleteSelectedNodes = () => {
     takeSnapshot();

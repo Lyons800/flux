@@ -12,6 +12,7 @@ export const DEFAULT_SETTINGS: Settings = {
   defaultPreamble: `You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible. Knowledge cutoff: 2021-09 Current date: ${
     new Date().toISOString().split("T")[0]
   }`,
+  sentiment: true,
 };
 
 export const HOTKEY_CONFIG: Options = {

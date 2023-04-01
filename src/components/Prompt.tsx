@@ -1,8 +1,13 @@
 import { useEffect, useRef } from "react";
 
-import { Node } from "reactflow";
+import {
+  Node,
+} from "reactflow";
 
-import { Spinner, Text } from "@chakra-ui/react";
+import {
+  Spinner, Text, Box, Button,
+  ButtonGroup,
+} from "@chakra-ui/react";
 
 import TextareaAutosize from "react-textarea-autosize";
 
@@ -32,6 +37,11 @@ export function Prompt({
   settings: Settings;
   setSettings: (settings: Settings) => void;
 }) {
+
+  const setProCon = (value: "pro" | "con") => {
+    setSettings({ ...settings, proCon: value });
+  };
+
   const promptNode = lineage[0];
 
   const promptNodeType = promptNode.data.fluxNodeType;
@@ -40,13 +50,20 @@ export function Prompt({
     if (promptNodeType === FluxNodeType.User) {
       submitPrompt();
     } else {
-      newConnectedToSelectedNode(FluxNodeType.User);
+      newConnectedToSelectedNodeWithType(FluxNodeType.User);
     }
   };
 
+  const newConnectedToSelectedNodeWithType = (type: FluxNodeType) => {
+    if (type === FluxNodeType.User) {
+      newConnectedToSelectedNode(type, settings.proCon);
+    } else {
+      newConnectedToSelectedNode(type);
+    }
+  };
   /*//////////////////////////////////////////////////////////////
                               EFFECTS
-  //////////////////////////////////////////////////////////////*/
+  /////////////////////////////////////////////////////////////*/
 
   const textOffsetRef = useRef<number>(-1);
 
@@ -71,7 +88,7 @@ export function Prompt({
 
   /*//////////////////////////////////////////////////////////////
                               APP
-  //////////////////////////////////////////////////////////////*/
+  /////////////////////////////////////////////////////////////*/
 
   return (
     <>
@@ -83,6 +100,9 @@ export function Prompt({
 
           const data = node.data;
 
+          const proConValue = data.fluxNodeType === FluxNodeType.User ? settings.proCon : data.proCon;
+
+
           return (
             <Row
               mb={2}
@@ -92,25 +112,25 @@ export function Prompt({
               crossAxisAlignment="flex-start"
               borderRadius="6px"
               borderLeftWidth={isLast ? "4px" : "0px"}
-              borderColor={getFluxNodeTypeDarkColor(data.fluxNodeType)}
-              bg={getFluxNodeTypeColor(data.fluxNodeType)}
+              borderColor={getFluxNodeTypeDarkColor(data.fluxNodeType, data.proCon)}
+              bg={getFluxNodeTypeColor(data.fluxNodeType, data.proCon)}
               key={node.id}
-              {...(!isLast
-                ? {
-                    onClick: () => {
-                      const selection = window.getSelection();
+              onClick={
+                !isLast
+                  ? () => {
+                    const selection = window.getSelection();
 
-                      // We don't want to trigger the selection
-                      // if they're just selecting/copying text.
-                      if (selection?.isCollapsed) {
-                        textOffsetRef.current = selection.anchorOffset ?? 0;
+                    // We don't want to trigger the selection
+                    // if they're just selecting/copying text.
+                    if (selection?.isCollapsed) {
+                      textOffsetRef.current = selection.anchorOffset ?? 0;
 
-                        selectNode(node.id);
-                      }
-                    },
-                    cursor: "pointer",
+                      selectNode(node.id);
+                    }
                   }
-                : {})}
+                  : undefined
+              }
+              cursor={!isLast ? "pointer" : "default"}
             >
               {data.generating && data.text === "" ? (
                 <Center expand>
@@ -134,10 +154,10 @@ export function Prompt({
                       onChange={(e) => onType(e.target.value)}
                       placeholder={
                         data.fluxNodeType === FluxNodeType.User
-                          ? "Write a poem about..."
+                          ? "Give your opinion here"
                           : data.fluxNodeType === FluxNodeType.System
-                          ? "You are ChatGPT..."
-                          : undefined
+                            ? "You are ChatGPT..."
+                            : undefined
                       }
                     />
                   ) : (
@@ -148,6 +168,51 @@ export function Prompt({
             </Row>
           );
         })}
+      <Row
+        mainAxisAlignment="center"
+        crossAxisAlignment="stretch"
+        width="100%"
+        height="100px"
+        id="promptButtons"
+      >
+        <Box flexGrow={1}>
+          <ButtonGroup size="sm" isAttached>
+            <Button
+              colorScheme={settings.proCon === "pro" ? "green" : "gray"}
+              onClick={() => setProCon("pro")}
+            >
+              Pro
+            </Button>
+            <Button
+              colorScheme={settings.proCon === "con" ? "red" : "gray"}
+              onClick={() => setProCon("con")}
+            >
+              Con
+            </Button>
+          </ButtonGroup>
+        </Box>
+      </Row>
+
+      <Row
+        mainAxisAlignment="center"
+        crossAxisAlignment="stretch"
+        width="100%"
+        height="100px"
+        id="promptButtons"
+      >
+        <BigButton
+          tooltip={promptNodeType === FluxNodeType.User ? "⌘⏎" : "⌘P"}
+
+          onClick={() => newConnectedToSelectedNodeWithType(FluxNodeType.User)}
+          color={getFluxNodeTypeDarkColor(FluxNodeType.User)}
+          width="100%"
+          height="100%"
+          fontSize="lg"
+        >
+          Give Opinion
+        </BigButton>
+
+      </Row>
 
       <Row
         mainAxisAlignment="center"
@@ -170,7 +235,6 @@ export function Prompt({
             {promptNodeType === FluxNodeType.User
               ? displayNameFromFluxNodeType(FluxNodeType.GPT, isGPT4)
               : displayNameFromFluxNodeType(FluxNodeType.User, isGPT4)}
-            &nbsp;
           </Text>
           response
         </BigButton>

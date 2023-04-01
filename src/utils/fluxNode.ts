@@ -16,25 +16,20 @@ export function newFluxNode({
   fluxNodeType,
   text,
   generating,
-}: {
-  id?: string;
-  x: number;
-  y: number;
-  fluxNodeType: FluxNodeType;
-  text: string;
-  generating: boolean;
-}): Node<FluxNodeData> {
+  proCon, // Add the proCon property here
+}: FluxNodeData): Node<FluxNodeData> {
   return {
     id: id ?? generateNodeId(),
     position: { x, y },
     style: {
-      background: getFluxNodeTypeColor(fluxNodeType),
+      background: getFluxNodeTypeColor(fluxNodeType, proCon),
     },
     data: {
       label: displayNameFromFluxNodeType(fluxNodeType),
       fluxNodeType,
       text,
       generating,
+      proCon, // Include the proCon property in the data object
     },
   };
 }
@@ -45,23 +40,9 @@ export function newFluxNode({
 
 export function addFluxNode(
   existingNodes: Node<FluxNodeData>[],
-  {
-    id,
-    x,
-    y,
-    fluxNodeType,
-    text,
-    generating,
-  }: {
-    id?: string;
-    x: number;
-    y: number;
-    fluxNodeType: FluxNodeType;
-    text: string;
-    generating: boolean;
-  }
+  nodeData: FluxNodeData // Use the FluxNodeData type here
 ): Node<FluxNodeData>[] {
-  const newNode = newFluxNode({ x, y, fluxNodeType, text, id, generating });
+  const newNode = newFluxNode(nodeData); // Pass the nodeData object directly
 
   return [...existingNodes, newNode];
 }
@@ -101,6 +82,7 @@ export function addUserNodeLinkedToASystemNode(
       fluxNodeType: FluxNodeType.User,
       text: userNodeText ?? "",
       generating: false,
+      proConValue: "pro",
     })
   );
 
