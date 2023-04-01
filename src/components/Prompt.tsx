@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   Node,
@@ -54,12 +54,23 @@ export function Prompt({
     }
   };
 
-  const newConnectedToSelectedNodeWithType = (type: FluxNodeType) => {
-    if (type === FluxNodeType.User) {
-      newConnectedToSelectedNode(type, settings.proCon);
-    } else {
-      newConnectedToSelectedNode(type);
+  const newConnectedToSelectedNodeWithType = (type: FluxNodeType, proCon: 'pro' | 'con' | null, opinion: string) => {
+    const opinionInput = document.getElementById("opinionInput") as HTMLTextAreaElement;
+    const opinionText = opinionInput.value.trim(); // Get the value of the input and remove leading/trailing whitespace
+   
+
+    if (opinionText) { // Only create a new node if there is input in the opinion text area
+      newConnectedToSelectedNode(type, settings.proCon, opinion);
+      
+      opinionInput.value = ""; // Clear the input field
+      
     }
+    
+    else {
+      // newConnectedToSelectedNode(type, settings.proCon);
+      
+    }
+  
   };
   /*//////////////////////////////////////////////////////////////
                               EFFECTS
@@ -85,6 +96,10 @@ export function Prompt({
     // Default to moving to the start of the text.
     textOffsetRef.current = -1;
   }, [promptNode.id]);
+
+  const [opinion, setOpinion] = useState("");
+
+
 
   /*//////////////////////////////////////////////////////////////
                               APP
@@ -192,7 +207,7 @@ export function Prompt({
           </ButtonGroup>
         </Box>
       </Row>
-      
+
       <TextareaAutosize
         id="opinionInput"
         style={{
@@ -203,6 +218,7 @@ export function Prompt({
           fontSize: "lg",
         }}
         placeholder="Enter your opinion here"
+        onChange={(e) => setOpinion(e.target.value)}
       />
 
       <Row
@@ -212,11 +228,11 @@ export function Prompt({
         height="100px"
         id="promptButtons"
       >
-        
+
         <BigButton
           tooltip={promptNodeType === FluxNodeType.User ? "⌘⏎" : "⌘P"}
 
-          onClick={() => newConnectedToSelectedNodeWithType(FluxNodeType.User)}
+          onClick={() => newConnectedToSelectedNodeWithType(FluxNodeType.User, settings.proCon, opinion)}
           color={getFluxNodeTypeDarkColor(FluxNodeType.User)}
           width="100%"
           height="100%"

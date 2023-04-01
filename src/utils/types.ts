@@ -9,6 +9,7 @@ type FluxNodeData = {
   text: string;
   generating: boolean;
   proCon?: "pro" | "con";
+  opinionText?: string;
 };
 
 export enum FluxNodeType {
