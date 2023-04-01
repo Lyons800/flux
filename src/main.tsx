@@ -17,6 +17,8 @@ import { getDefaultProvider } from 'ethers'
 
 export const MIXPANEL_TOKEN = import.meta.env.VITE_MIXPANEL_TOKEN;
 
+
+
  
 const client = createClient({
   autoConnect: true,
