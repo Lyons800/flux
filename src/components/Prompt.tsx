@@ -192,6 +192,18 @@ export function Prompt({
           </ButtonGroup>
         </Box>
       </Row>
+      
+      <TextareaAutosize
+        id="opinionInput"
+        style={{
+          flexGrow: 1,
+          padding: "8px",
+          marginRight: "16px",
+          borderRadius: "4px",
+          fontSize: "lg",
+        }}
+        placeholder="Enter your opinion here"
+      />
 
       <Row
         mainAxisAlignment="center"
@@ -200,6 +212,7 @@ export function Prompt({
         height="100px"
         id="promptButtons"
       >
+        
         <BigButton
           tooltip={promptNodeType === FluxNodeType.User ? "⌘⏎" : "⌘P"}
 
