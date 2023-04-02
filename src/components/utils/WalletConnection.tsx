@@ -6,19 +6,20 @@ import { publicProvider } from '@wagmi/core/providers/public'
 
 import '@rainbow-me/rainbowkit/styles.css';
 
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+
+
 import {
   getDefaultWallets,
   RainbowKitProvider,
 } from '@rainbow-me/rainbowkit';
-import { configureChains, createClient, WagmiConfig } from 'wagmi';
-import { mainnet, polygon, optimism, arbitrum } from 'wagmi/chains';
+import { createClient, WagmiConfig } from 'wagmi';
+import { polygon, optimism, arbitrum } from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
-import { publicProvider } from 'wagmi/providers/public';
  
 const { chains, provider, webSocketProvider } = configureChains(
   [mainnet],
   [publicProvider()],
-  [alchemyProvider({apiKey:""})]
 
 )
 
@@ -39,14 +40,19 @@ export function WalletConnection() {
       </Button>
     )
   return (
-    <Button
-      variant="ghost"
-      height="80%"
-      px="5px"
-      ml="16px"
-      onClick={() => connect()}
-    >
-      Connect Wallet
-    </Button>
+    
+
+    // <Button
+    //   variant="ghost"
+    //   height="80%"
+    //   px="5px"
+    //   ml="16px"
+    //   onClick={() => connect()}
+    // >
+    //   Connect Wallet
+    // </Button>
+
+    <ConnectButton/>
+    
   )
 }
