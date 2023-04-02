@@ -81,19 +81,13 @@ export default function Landing({ children }: Props): JSX.Element {
         <Title>MissionZK</Title>
 
         <Subtitle>
-        MissionZK is an innovative tool that leverages zero-knowledge proofs and Sismo badges to create a secure and privacy-preserving collaborative prompt chain interface. The key features of this tool are its ability to prove the state of a collaborative prompt chain interface without revealing any sensitive information, as well as its access control mechanism based on Sismo badges.
-
+        MissionZK focuses on improving the decision-making process within DAOs by leveraging zk-badgers from Sismo for identity verification. DAOs often struggle with effective decision-making, as they can be prone to manipulation and lack of transparency. By using Sismo badges, the platform verifies the identity of DAO contributors and ensures they meet specific criteria, such as having a Twitter account older than 30 days or owning a GitHub repository. This Sybil resistance layer fosters a trusted environment for contributors to express their pros and cons on various DAO proposals, ensuring that only genuine opinions from verified members are considered. This enhances the overall decision-making process within DAOs, promoting trust, transparency, and more informed choices.
 
         </Subtitle>
 
         {/* <LinkGroup /> */}
 
-        <Text>
-          These conferences have accepted to reserve tickets
-          <br />
-          
-        </Text>
-
+      
         {/* <Search /> */}
 
         <CallToAction>
