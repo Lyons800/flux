@@ -1,7 +1,7 @@
 const fonts = {
   logoRegular: "BebasNeuePro-Regular",
   logoBold: "BebasNeuePro-Bold",
-  charcuterie: "Charcuterie",
+  mont: "Montserrat",
   light: "Roboto-Light",
   regular: "Roboto-Regular",
   medium: "Roboto-Medium",

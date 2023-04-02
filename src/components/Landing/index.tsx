@@ -8,6 +8,7 @@ const Container = styled.div`
   align-items: center;
   justify-content: center;
   font-family: ${props => props.theme.fonts.regular};
+  margin: 50px;
 
   @media (max-width: 800px) {
     padding: 0 16px;
@@ -15,7 +16,7 @@ const Container = styled.div`
 `;
 
 const Title = styled.div`
-  font-family: ${props => props.theme.fonts.charcuterie};
+  font-family: ${props => props.theme.fonts.mont};
   font-size: 50px;
   line-height: 60px;
   width: 654px;
@@ -30,6 +31,7 @@ const Title = styled.div`
 `;
 
 const Subtitle = styled.div`
+font-family: ${props => props.theme.fonts.light};
   font-size: 18px;
   line-height: 24px;
   color: ${props => props.theme.colors.blue10};
@@ -45,6 +47,7 @@ const Subtitle = styled.div`
 `;
 
 const Text = styled.div`
+  font-family: ${props => props.theme.fonts.light};
   font-size: 12px;
   line-height: 14px;
   color: ${props => props.theme.colors.blue10};
@@ -57,6 +60,8 @@ const Text = styled.div`
 `;
 
 const CallToAction = styled.div`
+font-family: ${props => props.theme.fonts.light};
+
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -73,23 +78,23 @@ export default function Landing({ children }: Props): JSX.Element {
   return (
     <>
       <Container>
-        <Title>The Merge Contributors mailing list</Title>
+        <Title>MissionZK</Title>
 
         <Subtitle>
-          Contributors to The Merge can register their email addresses in a
-          privacy-preserving manner—gaining access to exclusive tickets for web3
-          events.
+        MissionZK is an innovative tool that leverages zero-knowledge proofs and Sismo badges to create a secure and privacy-preserving collaborative prompt chain interface. The key features of this tool are its ability to prove the state of a collaborative prompt chain interface without revealing any sensitive information, as well as its access control mechanism based on Sismo badges.
+
+
         </Subtitle>
 
-        <LinkGroup />
+        {/* <LinkGroup /> */}
 
         <Text>
           These conferences have accepted to reserve tickets
           <br />
-          for contributors to The Merge.
+          
         </Text>
 
-        <Search />
+        {/* <Search /> */}
 
         <CallToAction>
           
