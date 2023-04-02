@@ -12,6 +12,8 @@ import App from "./components/App";
 
 import "./index.css";
 
+import Theme from "./theme";
+
 export const MIXPANEL_TOKEN = import.meta.env.VITE_MIXPANEL_TOKEN;
 
 if (MIXPANEL_TOKEN) mixpanel.init(MIXPANEL_TOKEN);
@@ -20,7 +22,9 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ReactFlowProvider>
       <ChakraProvider>
-        <App />
+        <Theme>
+          <App />
+        </Theme>
       </ChakraProvider>
     </ReactFlowProvider>
   </React.StrictMode>

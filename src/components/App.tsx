@@ -92,8 +92,44 @@ import { messagesFromLineage, promptFromLineage } from "../utils/prompt";
 import { newFluxEdge, modifyFluxEdge, addFluxEdge } from "../utils/fluxEdge";
 import { getFluxNodeTypeColor, getFluxNodeTypeDarkColor } from "../utils/color";
 
+import axios from "axios";
+
+import Theme from "../theme";
+
+import Landing from "./Landing";
+
+import {
+  AuthType,
+  ZkConnectButton,
+  ZkConnectClientConfig,
+  ZkConnectResponse,
+} from "@sismo-core/zk-connect-react";
+
+const config: ZkConnectClientConfig = {
+  appId: "0x112a692a2005259c25f6094161007967",
+};
+
 function App() {
   const toast = useToast();
+
+  /*//////////////////////////////////////////////////////////////
+                        SISMOS LOGIC
+  //////////////////////////////////////////////////////////////*/
+  const [verifying, setVerifying] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<
+    "already-subscribed" | "not-subscribed" | null
+  >(null);
+
+  const [zkConnectResponse, setZkConnectResponse] = useState<ZkConnectResponse | null>(
+    null
+  );
+
+  async function onSubmitEmail(email: string) {
+    return await axios.post(`${env.zkMailingApiUrl}/subscribe`, {
+      email,
+      zkConnectResponse,
+    });
+  }
 
   /*//////////////////////////////////////////////////////////////
                           UNDO REDO LOGIC
@@ -103,11 +139,13 @@ function App() {
   const [future, setFuture] = useState<HistoryItem[]>([]);
 
   const takeSnapshot = () => {
-    // Push the current graph to the past state.
-    setPast((past) => [
-      ...past.slice(past.length - MAX_HISTORY_SIZE + 1, past.length),
-      { nodes, edges, selectedNodeId, lastSelectedNodeId },
-    ]);
+    +(
+      // Push the current graph to the past state.
+      setPast((past) => [
+        ...past.slice(past.length - MAX_HISTORY_SIZE + 1, past.length),
+        { nodes, edges, selectedNodeId, lastSelectedNodeId },
+      ])
+    );
 
     // Whenever we take a new snapshot, the redo operations
     // need to be cleared to avoid state mismatches.
@@ -825,168 +863,204 @@ function App() {
 
   return (
     <>
-      {!isValidAPIKey(apiKey) && <APIKeyModal apiKey={apiKey} setApiKey={setApiKey} />}
+      {!subscriptionStatus && (
+        <Landing>
+          <ZkConnectButton
+            config={config}
+            claimRequest={{
+              groupId: "0x42c768bb8ae79e4c5c05d3b51a4ec74a",
+            }}
+            authRequest={{
+              authType: AuthType.ANON,
+            }}
+            onResponse={(response) => {
+              setZkConnectResponse(response);
+              setVerifying(true);
+              axios
+                .post(`https:www.changeme.com/subscribe`, {
+                  zkConnectResponse: response,
+                })
+                .then((res) => {
+                  setVerifying(false);
+                  setSubscriptionStatus(res.data.status);
+                })
+                .catch((err) => {
+                  console.log(err.response.data.status);
+                  setVerifying(false);
+                });
+            }}
+            verifying={verifying}
+          />
+        </Landing>
+      )}
 
-      <SettingsModal
-        settings={settings}
-        setSettings={setSettings}
-        isOpen={isSettingsModalOpen}
-        onClose={onCloseSettingsModal}
-        apiKey={apiKey}
-        setApiKey={setApiKey}
-      />
-      <Column
-        mainAxisAlignment="center"
-        crossAxisAlignment="center"
-        height="100vh"
-        width="100%"
-      >
-        <Row mainAxisAlignment="flex-start" crossAxisAlignment="stretch" expand>
-          <Resizable
-            maxWidth="75%"
-            minWidth="15%"
-            defaultSize={{
-              width: "50%",
-              height: "auto",
-            }}
-            enable={{
-              top: false,
-              right: true,
-              bottom: false,
-              left: false,
-              topRight: false,
-              bottomRight: false,
-              bottomLeft: false,
-              topLeft: false,
-            }}
-            onResizeStop={autoZoomIfNecessary}
+      {subscriptionStatus && (
+        <>
+          {!isValidAPIKey(apiKey) && (
+            <APIKeyModal apiKey={apiKey} setApiKey={setApiKey} />
+          )}
+          <SettingsModal
+            settings={settings}
+            setSettings={setSettings}
+            isOpen={isSettingsModalOpen}
+            onClose={onCloseSettingsModal}
+            apiKey={apiKey}
+            setApiKey={setApiKey}
+          />
+          <Column
+            mainAxisAlignment="center"
+            crossAxisAlignment="center"
+            height="100vh"
+            width="100%"
           >
-            <Column
-              mainAxisAlignment="center"
-              crossAxisAlignment="center"
-              borderRightColor="#EEEEEE"
-              borderRightWidth="1px"
-              expand
-            >
-              <Row
-                mainAxisAlignment="space-between"
-                crossAxisAlignment="center"
-                width="100%"
-                height="50px"
-                px="20px"
-                borderBottomColor="#EEEEEE"
-                borderBottomWidth="1px"
-              >
-                <NavigationBar
-                  newUserNodeLinkedToANewSystemNode={() =>
-                    newUserNodeLinkedToANewSystemNode()
-                  }
-                  newConnectedToSelectedNode={newConnectedToSelectedNode}
-                  deleteSelectedNodes={deleteSelectedNodes}
-                  submitPrompt={submitPrompt}
-                  completeNextWords={completeNextWords}
-                  undo={undo}
-                  redo={redo}
-                  onClear={onClear}
-                  copyMessagesToClipboard={copyMessagesToClipboard}
-                  moveToParent={moveToParent}
-                  moveToChild={moveToChild}
-                  moveToLeftSibling={moveToLeftSibling}
-                  moveToRightSibling={moveToRightSibling}
-                  autoZoom={autoZoom}
-                  onOpenSettingsModal={() => {
-                    if (MIXPANEL_TOKEN) mixpanel.track("Opened Settings Modal");
-                    onOpenSettingsModal();
-                  }}
-                />
-
-                <Box ml="20px">
-                  {isAnythingLoading ? (
-                    <Spinner size="sm" mt="6px" color={"#404040"} />
-                  ) : (
-                    <CheckCircleIcon color={"#404040"} />
-                  )}
-                </Box>
-              </Row>
-
-              <ReactFlow
-                proOptions={{ hideAttribution: true }}
-                nodes={nodes}
-                maxZoom={1.5}
-                minZoom={0}
-                edges={edges}
-                onInit={setReactFlow}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onEdgesDelete={takeSnapshot}
-                onNodesDelete={takeSnapshot}
-                onConnect={onConnect}
-                // Causes clicks to also trigger auto zoom.
-                // onNodeDragStop={autoZoomIfNecessary}
-                onSelectionDragStop={autoZoomIfNecessary}
-                selectionKeyCode={null}
-                multiSelectionKeyCode="Shift"
-                panActivationKeyCode={null}
-                deleteKeyCode={null}
-                panOnDrag={false}
-                selectionOnDrag={true}
-                zoomOnScroll={false}
-                zoomActivationKeyCode={null}
-                panOnScroll={true}
-                selectionMode={SelectionMode.Partial}
-                onNodeClick={(_, node) => {
-                  setLastSelectedNodeId(selectedNodeId);
-                  setSelectedNodeId(node.id);
+            <Row mainAxisAlignment="flex-start" crossAxisAlignment="stretch" expand>
+              <Resizable
+                maxWidth="75%"
+                minWidth="15%"
+                defaultSize={{
+                  width: "50%",
+                  height: "auto",
                 }}
-              >
-                <Background />
-              </ReactFlow>
-            </Column>
-          </Resizable>
-
-          <Box height="100%" width="100%" overflowY="scroll" p={4}>
-            {selectedNodeLineage.length >= 1 ? (
-              <Prompt
-                settings={settings}
-                setSettings={setSettings}
-                isGPT4={isGPT4}
-                selectNode={selectNode}
-                newConnectedToSelectedNode={newConnectedToSelectedNode}
-                lineage={selectedNodeLineage}
-                onType={(text: string) => {
-                  takeSnapshot();
-                  setNodes((nodes) =>
-                    modifyFluxNode(nodes, {
-                      asHuman: true,
-                      id: selectedNodeId!,
-                      text,
-                    })
-                  );
+                enable={{
+                  top: false,
+                  right: true,
+                  bottom: false,
+                  left: false,
+                  topRight: false,
+                  bottomRight: false,
+                  bottomLeft: false,
+                  topLeft: false,
                 }}
-                submitPrompt={submitPrompt}
-              />
-            ) : (
-              <Column
-                expand
-                textAlign="center"
-                mainAxisAlignment={"center"}
-                crossAxisAlignment={"center"}
+                onResizeStop={autoZoomIfNecessary}
               >
-                <BigButton
-                  tooltip="⇧⌘P"
-                  width="400px"
-                  height="100px"
-                  fontSize="xl"
-                  onClick={() => newUserNodeLinkedToANewSystemNode()}
-                  color={getFluxNodeTypeDarkColor(FluxNodeType.GPT)}
+                <Column
+                  mainAxisAlignment="center"
+                  crossAxisAlignment="center"
+                  borderRightColor="#EEEEEE"
+                  borderRightWidth="1px"
+                  expand
                 >
-                  Create a new conversation tree
-                </BigButton>
-              </Column>
-            )}
-          </Box>
-        </Row>
-      </Column>
+                  <Row
+                    mainAxisAlignment="space-between"
+                    crossAxisAlignment="center"
+                    width="100%"
+                    height="50px"
+                    px="20px"
+                    borderBottomColor="#EEEEEE"
+                    borderBottomWidth="1px"
+                  >
+                    <NavigationBar
+                      newUserNodeLinkedToANewSystemNode={() =>
+                        newUserNodeLinkedToANewSystemNode()
+                      }
+                      newConnectedToSelectedNode={newConnectedToSelectedNode}
+                      deleteSelectedNodes={deleteSelectedNodes}
+                      submitPrompt={submitPrompt}
+                      completeNextWords={completeNextWords}
+                      undo={undo}
+                      redo={redo}
+                      onClear={onClear}
+                      copyMessagesToClipboard={copyMessagesToClipboard}
+                      moveToParent={moveToParent}
+                      moveToChild={moveToChild}
+                      moveToLeftSibling={moveToLeftSibling}
+                      moveToRightSibling={moveToRightSibling}
+                      autoZoom={autoZoom}
+                      onOpenSettingsModal={() => {
+                        if (MIXPANEL_TOKEN) mixpanel.track("Opened Settings Modal");
+                        onOpenSettingsModal();
+                      }}
+                    />
+
+                    <Box ml="20px">
+                      {isAnythingLoading ? (
+                        <Spinner size="sm" mt="6px" color={"#404040"} />
+                      ) : (
+                        <CheckCircleIcon color={"#404040"} />
+                      )}
+                    </Box>
+                  </Row>
+
+                  <ReactFlow
+                    proOptions={{ hideAttribution: true }}
+                    nodes={nodes}
+                    maxZoom={1.5}
+                    minZoom={0}
+                    edges={edges}
+                    onInit={setReactFlow}
+                    onNodesChange={onNodesChange}
+                    onEdgesChange={onEdgesChange}
+                    onEdgesDelete={takeSnapshot}
+                    onNodesDelete={takeSnapshot}
+                    onConnect={onConnect}
+                    // Causes clicks to also trigger auto zoom.
+                    // onNodeDragStop={autoZoomIfNecessary}
+                    onSelectionDragStop={autoZoomIfNecessary}
+                    selectionKeyCode={null}
+                    multiSelectionKeyCode="Shift"
+                    panActivationKeyCode={null}
+                    deleteKeyCode={null}
+                    panOnDrag={false}
+                    selectionOnDrag={true}
+                    zoomOnScroll={false}
+                    zoomActivationKeyCode={null}
+                    panOnScroll={true}
+                    selectionMode={SelectionMode.Partial}
+                    onNodeClick={(_, node) => {
+                      setLastSelectedNodeId(selectedNodeId);
+                      setSelectedNodeId(node.id);
+                    }}
+                  >
+                    <Background />
+                  </ReactFlow>
+                </Column>
+              </Resizable>
+
+              <Box height="100%" width="100%" overflowY="scroll" p={4}>
+                {selectedNodeLineage.length >= 1 ? (
+                  <Prompt
+                    settings={settings}
+                    setSettings={setSettings}
+                    isGPT4={isGPT4}
+                    selectNode={selectNode}
+                    newConnectedToSelectedNode={newConnectedToSelectedNode}
+                    lineage={selectedNodeLineage}
+                    onType={(text: string) => {
+                      takeSnapshot();
+                      setNodes((nodes) =>
+                        modifyFluxNode(nodes, {
+                          asHuman: true,
+                          id: selectedNodeId!,
+                          text,
+                        })
+                      );
+                    }}
+                    submitPrompt={submitPrompt}
+                  />
+                ) : (
+                  <Column
+                    expand
+                    textAlign="center"
+                    mainAxisAlignment={"center"}
+                    crossAxisAlignment={"center"}
+                  >
+                    <BigButton
+                      tooltip="⇧⌘P"
+                      width="400px"
+                      height="100px"
+                      fontSize="xl"
+                      onClick={() => newUserNodeLinkedToANewSystemNode()}
+                      color={getFluxNodeTypeDarkColor(FluxNodeType.GPT)}
+                    >
+                      Create a new conversation tree
+                    </BigButton>
+                  </Column>
+                )}
+              </Box>
+            </Row>
+          </Column>
+        </>
+      )}
     </>
   );
 }
