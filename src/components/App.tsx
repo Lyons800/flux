@@ -92,6 +92,8 @@ import { messagesFromLineage, promptFromLineage } from "../utils/prompt";
 import { newFluxEdge, modifyFluxEdge, addFluxEdge } from "../utils/fluxEdge";
 import { getFluxNodeTypeColor, getFluxNodeTypeDarkColor } from "../utils/color";
 
+import axios from "axios";
+
 function App() {
   const toast = useToast();
 
@@ -184,12 +186,44 @@ function App() {
     if (settings.autoZoom) autoZoom();
   };
 
-  const save = () => {
+  const save = async () => {
     if (reactFlow) {
       localStorage.setItem(
         REACT_FLOW_LOCAL_STORAGE_KEY,
         JSON.stringify(reactFlow.toObject())
       );
+
+      const flowData = reactFlow.toObject();
+
+      const data = JSON.stringify({
+        pinataOptions: {
+          cidVersion: 1,
+        },
+        pinataMetadata: {
+          name: "testing",
+          keyvalues: {
+            customKey: "customValue",
+            customKey2: "customValue2",
+          },
+        },
+        pinataContent: flowData,
+      });
+
+      const config = {
+        method: "post",
+        url: "https://api.pinata.cloud/pinning/pinJSONToIPFS",
+        headers: {
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIxNDFmNTU0NS0wODVlLTQ0Y2YtYTU1NS1jNmY0NzNlZmNjNzUiLCJlbWFpbCI6ImVhcmwucG90dGVyc0BnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGluX3BvbGljeSI6eyJyZWdpb25zIjpbeyJpZCI6Ik5ZQzEiLCJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MX1dLCJ2ZXJzaW9uIjoxfSwibWZhX2VuYWJsZWQiOmZhbHNlLCJzdGF0dXMiOiJBQ1RJVkUifSwiYXV0aGVudGljYXRpb25UeXBlIjoic2NvcGVkS2V5Iiwic2NvcGVkS2V5S2V5IjoiODU0ZmQxZDdkZjA2YjRmZWUwMGMiLCJzY29wZWRLZXlTZWNyZXQiOiJmZDc2YWVmZjk4OWExNzA5ZDAwZjM4OGVhZjY1N2Y5YWM0ZGU5YjJlYWZjZGI0Nzk4ZTY5NTYyOGFhNmZlODQyIiwiaWF0IjoxNjgwNDIzMjU4fQ.EC9gRIiQkTkklWCqQKguYib0NixVnoadbHIwJM9WiFY",
+          "Content-Type": "application/json",
+        },
+        data: data,
+      };
+
+      // @ts-ignore
+      const res = await axios(config);
+
+      console.log(res.data);
 
       console.log("Saved React Flow state!");
     }
